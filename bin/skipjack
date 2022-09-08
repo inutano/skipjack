@@ -1,5 +1,122 @@
 #!/bin/bash
 set -eu
-if [[ -z $(which mc 2>/dev/null) ]]; then
-  echo "mc command not found: installing.."
-fi
+
+# Variables
+MC_BIN_URL="https://dl.min.io/client/mc/release/linux-amd64/mc"
+MC_BIN_PATH="$(which mc 2>/dev/null ||:)"
+MC_DIR="${HOME}/.mc"
+MC_BIN_DIR="${MC_DIR}/bin"
+ENVFILE="${MC_DIR}/.env"
+
+WORKDIR="$( cd "$( dirname "$0" )" && pwd -P)"
+
+# Functions
+check_and_install_mc() {
+  if [[ -z ${MC_BIN_PATH} ]]; then
+    MC_BIN_PATH="${MC_BIN_DIR}/mc"
+    if [[ ! -e ${MC_BIN_DIR}/mc ]]; then
+      echo "mc command not found: installing at ${MC_BIN_DIR} .."
+      mkdir -p ${MC_BIN_DIR}
+      cd ${MC_BIN_DIR}
+      curl -s ${MC_BIN_URL} > ${MC_BIN_PATH}
+      chmod +x ${MC_BIN_PATH}
+    fi
+  fi
+  echo "Using mc command at ${MC_BIN_PATH} .."
+}
+
+check_env_and_parse() {
+  if [[ ! -e "${ENVFILE}" ]]; then
+    echo "ERROR: ${ENVFILE} not found. Create and fill connection info as follows:"
+    echo "ALIAS=<minio_server_alias>"
+    echo "URL=<minio_server_url>"
+    echo "ACCESSKEY=<access_key>"
+    echo "SECRETKEY=<secret_key>"
+    exit 1
+  fi
+  MINIO_ALIAS="$(grep 'ALIAS' ${ENVFILE} | cut -d '=' -f 2)"
+  MINIO_URL="$(grep 'URL' ${ENVFILE} | cut -d '=' -f 2)"
+  MINIO_ACCESSKEY="$(grep 'ACCESSKEY' ${ENVFILE} | cut -d '=' -f 2)"
+  MINIO_SECRETKEY="$(grep 'SECRETKEY' ${ENVFILE} | cut -d '=' -f 2)"
+}
+
+set_minio_alias() {
+  check_env_and_parse
+  no_alias=$(${MC_BIN_PATH} alas ls ${MINIO_ALIAS} | grep ERROR ||:)
+  if [[ -z ${no_alias} ]]; then
+    echo "Setting minio alias.."
+    ${MC_BIN_PATH} alias set ${MINIO_ALIAS} ${MINIO_URL} ${MINIO_ACCESSKEY} ${MINIO_SECRETKEY}
+  fi
+}
+
+copy() {
+  echo "copy"
+}
+
+clean_mc_dir() {
+  rm -fr ${MC_DIR}
+}
+
+version() {
+  echo "skipjack: 0.1.0"
+}
+
+help() {
+cat <<EOS
+$(version)
+
+Usage:
+  skipjack [subcommand] <file..>
+
+Subcommand:
+  cp                      Copy files to the storage
+  env                     Show content of ~/.mc/.env file
+  mc                      Execute mc command directly
+  mirror                  Mirror files to the storage
+  clean                   Clean up mc dir (default: ~/.mc)
+  help (-h|--help)        Show this help message
+  version (-v|--version)  Show version information
+EOS
+}
+
+main() {
+  check_and_install_mc
+  if [[ $# -eq 0 ]]; then
+    help
+    exit 0
+  else
+    subcmd=${1}
+    case ${subcmd} in
+      version|--version|-v)
+        version
+        exit 0
+        ;;
+      help|--help|-h)
+        help
+        exit 0
+        ;;
+      cp)
+        shift
+        set_minio_alias
+        ;;
+      mc)
+        shift
+        set_minio_alias
+        ${MC_BIN_PATH} $@
+        exit 0
+        ;;
+      mirror)
+        shift
+        set_minio_alias
+        ;;
+      clean)
+        echo "Deleting ${MC_DIR} .."
+        rm -fr ${MC_DIR}
+        exit 0
+        ;;
+    esac
+  fi
+}
+
+# Run
+main $@
