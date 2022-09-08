@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eu
+if [[ -z $(which mc 2>/dev/null) ]]; then
+  echo "mc command not found: installing.."
+fi
