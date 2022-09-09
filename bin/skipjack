@@ -88,6 +88,10 @@ mc_ls() {
   echo "ls" $@
 }
 
+mc_mb() {
+  echo "mb" $@
+}
+
 mc_cmd() {
   ${MC_BIN_PATH} $@
 }
@@ -112,6 +116,7 @@ Subcommand:
   clean                   Clean up mc dir (default: ~/.mc)
   config                  Show content of ~/.mc/config file
   help (-h|--help)        Show this help message
+  mb                      Create a bucket
   mc                      Execute mc command directly
   mirror                  Mirror files to the storage
   setup                   Check mc command and install if not found
@@ -144,13 +149,14 @@ main() {
         exit 0
         ;;
       mc)
-        CMD="mc"
         ;;
       cp)
-        CMD="copy"
         ;;
       mirror)
-        CMD="mirror"
+        ;;
+      ls)
+        ;;
+      mb)
         ;;
       *)
         echo "ERROR: invalid command ${subcmd}" 1>&2
@@ -164,7 +170,7 @@ main() {
   check_and_install_mc
   set_minio_alias
 
-  if [[ ${CMD} == "mc" ]]; then
+  if [[ ${subcmd} == "mc" ]]; then
     mc_cmd $@
   else
     if [[ $# -lt 2 ]]; then
@@ -193,9 +199,9 @@ main() {
       shift
     done
 
+    set +u
     set -- "${FILES[@]}"
-
-    case ${CMD} in
+    case ${subcmd} in
       cp)
         echo mc_copy ${OPTIONS[@]} $@ ${BUCKET}
         ;;
@@ -204,6 +210,10 @@ main() {
         ;;
       ls)
         echo mc_ls ${OPTIONS[@]} ${BUCKET}
+        ;;
+      mb)
+        echo mc_mb ${OPTIONS[@]} ${BUCKET}
+        ;;
     esac
   fi
 }
