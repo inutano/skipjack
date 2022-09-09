@@ -181,7 +181,7 @@ main() {
 
     FILES=()
     OPTIONS=()
-    while [[ $# -gt 1 ]]; do
+    while [[ $# -gt 0 ]]; do
       arg=${1}
       case ${arg} in
         --bucket|-b)
@@ -203,16 +203,16 @@ main() {
     set -- "${FILES[@]}"
     case ${subcmd} in
       cp)
-        mc_copy ${OPTIONS[@]} $@ ${BUCKET}
+        mc_copy ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
         ;;
       mirror)
-        mc_mirror ${OPTIONS[@]} $@ ${BUCKET}
+        mc_mirror ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
         ;;
       ls)
-        mc_ls ${OPTIONS[@]} ${BUCKET}
+        mc_ls ${OPTIONS[@]} ${MINIO_ALIAS}/${BUCKET}
         ;;
       mb)
-        mc_mb ${OPTIONS[@]} ${BUCKET}
+        mc_mb ${OPTIONS[@]} ${MINIO_ALIAS}/${BUCKET}
         ;;
     esac
   fi
