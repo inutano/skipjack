@@ -76,14 +76,16 @@ set_minio_alias() {
   fi
 }
 
-copy() {
-  echo "copy"
-  echo $@
+mc_copy() {
+  echo "copy" $@
 }
 
-mirror() {
-  echo "mirror"
-  echo $@
+mc_mirror() {
+  echo "mirror" $@
+}
+
+mc_ls() {
+  echo "ls" $@
 }
 
 mc_cmd() {
@@ -121,7 +123,7 @@ main() {
     help
     exit 0
   else
-    subcmd=${1}
+    local subcmd=${1}
     case ${subcmd} in
       version|--version|-v)
         version
@@ -150,8 +152,9 @@ main() {
         CMD="mirror"
         ;;
       *)
+        echo "ERROR: invalid command ${subcmd}" 1>&2
         help
-        exit 0
+        exit 1
         ;;
     esac
     shift
@@ -165,16 +168,21 @@ main() {
   else
     if [[ $# -lt 2 ]]; then
       echo "ERROR: invalid number of arguments" 2>&1
-      echo "Usage: skipjack ${CMD} <file>... <bucket>" 2>&1
+      echo "Usage: skipjack ${subcmd} [option] --bucket <bucket> <file>..." 2>&1
       exit 1
     fi
 
     FILES=()
+    OPTIONS=()
     while [[ $# -gt 1 ]]; do
       arg=${1}
       case ${arg} in
         --bucket|-b)
           BUCKET=${2}
+          shift
+          ;;
+        --recursive|-r)
+          OPTIONS+=("${1}")
           shift
           ;;
         *)
@@ -188,11 +196,13 @@ main() {
 
     case ${CMD} in
       cp)
-        copy $@
+        echo mc_copy ${OPTIONS[@]} $@ ${BUCKET}
         ;;
       mirror)
-        mirror $@
+        echo mc_mirror ${OPTIONS[@]} $@ ${BUCKET}
         ;;
+      ls)
+        echo mc_ls ${OPTIONS[@]} ${BUCKET}
     esac
   fi
 }
