@@ -77,19 +77,19 @@ set_minio_alias() {
 }
 
 mc_copy() {
-  echo "copy" $@
+  ${MC_BIN_PATH} cp $@
 }
 
 mc_mirror() {
-  echo "mirror" $@
+  ${MC_BIN_PATH} mirror $@
 }
 
 mc_ls() {
-  echo "ls" $@
+  ${MC_BIN_PATH} ls $@
 }
 
 mc_mb() {
-  echo "mb" $@
+  ${MC_BIN_PATH} mb $@
 }
 
 mc_cmd() {
@@ -203,16 +203,16 @@ main() {
     set -- "${FILES[@]}"
     case ${subcmd} in
       cp)
-        echo mc_copy ${OPTIONS[@]} $@ ${BUCKET}
+        mc_copy ${OPTIONS[@]} $@ ${BUCKET}
         ;;
       mirror)
-        echo mc_mirror ${OPTIONS[@]} $@ ${BUCKET}
+        mc_mirror ${OPTIONS[@]} $@ ${BUCKET}
         ;;
       ls)
-        echo mc_ls ${OPTIONS[@]} ${BUCKET}
+        mc_ls ${OPTIONS[@]} ${BUCKET}
         ;;
       mb)
-        echo mc_mb ${OPTIONS[@]} ${BUCKET}
+        mc_mb ${OPTIONS[@]} ${BUCKET}
         ;;
     esac
   fi
