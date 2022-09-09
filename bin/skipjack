@@ -124,6 +124,12 @@ Subcommand:
 EOS
 }
 
+argument_error() {
+  echo "ERROR: invalid number of arguments" 2>&1
+  echo "Usage: skipjack ${subcmd} [option] --bucket <bucket> <file>..." 2>&1
+  exit 1
+}
+
 main() {
   if [[ $# -eq 0 ]]; then
     help
@@ -173,10 +179,8 @@ main() {
   if [[ ${subcmd} == "mc" ]]; then
     mc_cmd $@
   else
-    if [[ $# -lt 2 ]]; then
-      echo "ERROR: invalid number of arguments" 2>&1
-      echo "Usage: skipjack ${subcmd} [option] --bucket <bucket> <file>..." 2>&1
-      exit 1
+    if [[ $# -lt 2 && ${subcmd} != "ls" ]]; then
+      argument_error
     fi
 
     FILES=()
@@ -203,10 +207,18 @@ main() {
     set -- "${FILES[@]}"
     case ${subcmd} in
       cp)
-        mc_copy ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
+        if [[ $# -eq 0 ]]; then
+          argument_error
+        else
+          mc_copy ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
+        fi
         ;;
       mirror)
-        mc_mirror ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
+        if [[ $# -eq 0 ]]; then
+          argument_error
+        else
+          mc_mirror ${OPTIONS[@]} $@ ${MINIO_ALIAS}/${BUCKET}
+        fi
         ;;
       ls)
         mc_ls ${OPTIONS[@]} ${MINIO_ALIAS}/${BUCKET}
