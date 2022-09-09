@@ -6,7 +6,7 @@ MC_BIN_URL="https://dl.min.io/client/mc/release/linux-amd64/mc"
 MC_BIN_PATH="$(which mc 2>/dev/null ||:)"
 MC_DIR="${HOME}/.mc"
 MC_BIN_DIR="${MC_DIR}/bin"
-CONFIG_FILE="${MC_DIR}/config"
+CONFIG_FILE="${MC_DIR}/sj_config"
 
 WORKDIR="$( cd "$( dirname "$0" )" && pwd -P)"
 
@@ -105,15 +105,16 @@ cat <<EOS
 $(version)
 
 Usage:
-  skipjack [subcommand] [source<local file>] [target<storage server>]
+  skipjack <subcommand> [options] --bucket <server alias> <source>...
 
 Subcommand:
   cp                      Copy files to the storage
-  env                     Show content of ~/.mc/.env file
+  clean                   Clean up mc dir (default: ~/.mc)
+  config                  Show content of ~/.mc/config file
+  help (-h|--help)        Show this help message
   mc                      Execute mc command directly
   mirror                  Mirror files to the storage
-  clean                   Clean up mc dir (default: ~/.mc)
-  help (-h|--help)        Show this help message
+  setup                   Check mc command and install if not found
   version (-v|--version)  Show version information
 EOS
 }
@@ -138,7 +139,7 @@ main() {
         rm -fr ${MC_DIR}
         exit 0
         ;;
-      env)
+      config)
         show_config_file
         exit 0
         ;;
