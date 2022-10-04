@@ -68,7 +68,6 @@ show_config_file() {
 }
 
 parse_config_file() {
-  check_config_file
   MINIO_ALIAS="$(grep 'ALIAS' ${CONFIG_FILE} | cut -d '=' -f 2)"
   MINIO_URL="$(grep 'URL' ${CONFIG_FILE} | cut -d '=' -f 2)"
   MINIO_ACCESSKEY="$(grep 'ACCESSKEY' ${CONFIG_FILE} | cut -d '=' -f 2)"
