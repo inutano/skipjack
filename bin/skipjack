@@ -40,6 +40,7 @@ check_config_file() {
 }
 
 create_config_file_template() {
+  touch ${CONFIG_FILE}
   echo "ALIAS=" >> ${CONFIG_FILE}
   echo "URL=" >> ${CONFIG_FILE}
   echo "ACCESSKEY=" >> ${CONFIG_FILE}
@@ -114,12 +115,11 @@ Usage:
 Subcommand:
   cp                      Copy files to the storage
   clean                   Clean up mc dir (default: ~/.mc)
-  config                  Show content of ~/.mc/config file
+  config                  Setup ~/.mc/config file or show configuration
   help (-h|--help)        Show this help message
   mb                      Create a bucket
   mc                      Execute mc command directly
   mirror                  Mirror files to the storage
-  setup                   Check mc command and install if not found
   version (-v|--version)  Show version information
 EOS
 }
