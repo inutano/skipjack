@@ -11,23 +11,9 @@ CONFIG_FILE="${MC_DIR}/sj_config"
 WORKDIR="$( cd "$( dirname "$0" )" && pwd -P)"
 
 # Functions
-check_and_install_mc() {
-  if [[ -z ${MC_BIN_PATH} ]]; then
-    MC_BIN_PATH="${MC_BIN_DIR}/mc"
-    if [[ ! -e ${MC_BIN_PATH} ]]; then
-      echo "mc command not found: installing at ${MC_BIN_DIR} .." 1>&2
-      mkdir -p ${MC_BIN_DIR}
-      cd ${MC_BIN_DIR}
-      curl -s ${MC_BIN_URL} > ${MC_BIN_PATH}
-      chmod +x ${MC_BIN_PATH}
-
-      create_config_file_template
-      echo "Edit ${CONFIG_FILE} file as follows to start using mc command:"
-      config_file_instruction
-      exit 0
-    fi
-  fi
-  echo "Using mc command at ${MC_BIN_PATH} .." 1>&2
+check_configuration() {
+  check_config_file
+  check_and_install_mc
 }
 
 check_config_file() {
@@ -46,10 +32,26 @@ check_config_file() {
 create_config_file_template() {
   mkdir -p ${MC_DIR}
   touch ${CONFIG_FILE}
-  echo "ALIAS=" >> ${CONFIG_FILE}
-  echo "URL=" >> ${CONFIG_FILE}
-  echo "ACCESSKEY=" >> ${CONFIG_FILE}
-  echo "SECRETKEY=" >> ${CONFIG_FILE}
+  cat <<EOS > ${CONFIG_FILE}
+ALIAS=
+URL=
+ACCESSKEY=
+SECRETKEY=
+EOS
+}
+
+check_and_install_mc() {
+  if [[ -z ${MC_BIN_PATH} ]]; then
+    MC_BIN_PATH="${MC_BIN_DIR}/mc"
+    if [[ ! -e ${MC_BIN_PATH} ]]; then
+      echo "mc command not found: installing at ${MC_BIN_DIR} .." 1>&2
+      mkdir -p ${MC_BIN_DIR}
+      cd ${MC_BIN_DIR}
+      curl -s ${MC_BIN_URL} > ${MC_BIN_PATH}
+      chmod +x ${MC_BIN_PATH}
+    fi
+  fi
+  echo "mc command at ${MC_BIN_PATH} .." 1>&2
 }
 
 config_file_instruction() {
@@ -61,7 +63,7 @@ config_file_instruction() {
 }
 
 show_config_file() {
-  check_config_file
+  check_configuration
   cat "${CONFIG_FILE}"
 }
 
@@ -120,7 +122,7 @@ Usage:
 Subcommand:
   cp                      Copy files to the storage
   clean                   Clean up mc dir (default: ~/.mc)
-  config                  Setup ~/.mc/config file or show configuration
+  configure               Setup ~/.mc/config file or show configuration
   help (-h|--help)        Show this help message
   mb                      Create a bucket
   mc                      Execute mc command directly
@@ -155,7 +157,7 @@ main() {
         rm -fr ${MC_DIR}
         exit 0
         ;;
-      config)
+      configure)
         show_config_file
         exit 0
         ;;
@@ -178,7 +180,7 @@ main() {
     shift
   fi
 
-  check_and_install_mc
+  check_configuration
   set_minio_alias
 
   if [[ ${subcmd} == "mc" ]]; then
