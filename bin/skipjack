@@ -31,15 +31,20 @@ check_and_install_mc() {
 }
 
 check_config_file() {
+  echo "Configuration file path: ${CONFIG_FILE}" 1>&2
   if [[ ! -e "${CONFIG_FILE}" ]]; then
+    echo "ERROR: File not found. Creating template.." 1>&2
     create_config_file_template
-    echo "ERROR: Configuration unavailable. Edit ${CONFIG_FILE} and fill connection info as follows:" 1>&2
+
+    echo ">> Add connection information as follows:" 1>&2
     config_file_instruction
+
     exit 1
   fi
 }
 
 create_config_file_template() {
+  mkdir -p ${MC_DIR}
   touch ${CONFIG_FILE}
   echo "ALIAS=" >> ${CONFIG_FILE}
   echo "URL=" >> ${CONFIG_FILE}
